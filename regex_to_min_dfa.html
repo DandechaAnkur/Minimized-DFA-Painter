@@ -1,0 +1,1002 @@
+﻿<html>
+	<head>
+		<meta name='description' content='This page is a jaVascript program that uses CanVas API to paint a Minimized DFA (Deterministic Finite Automaton) from a giVen regular expression. Internally it generates, in order, an alphabet releVant to the specified regular expression, a tree to calculate follovvposes, a DFA from the tree and lastly the minimized DFA.'/>
+		<title>Regular Expression To Minimized DFA (Deterministic Finite Automaton) - A DFA Painter</title>
+		<style>
+			* { font: 20px Arial Unicode MS; letter-spacing: 2px; }
+			input { border-radius: 4px; margin: 0.20% 0px; }
+			span { color: red; font-weight: 900; }
+			td, th { border: 1px solid black; text-align: center; padding: 4px; }
+			th { font: bold 20px consolas; }
+			table { border-collapse: collapse; }
+			canvas { border: 0px solid black; }
+			.anHr { border-top: 1px solid lightgrey; margin: 20px 0px; }
+			#output .anHr:nth-of-type(2) { display: none; }
+			.hideHelp { display: none; }
+		</style>
+	</head>
+	<body>
+		<input type="button" onclick='document.getElementById("help").classList.add("hideHelp"); document.getElementById("thanks").classList.toggle("hideHelp");' value="Thanks" accesskey="T" title="T"/>
+		<input type="button" onclick='document.getElementById("thanks").classList.add("hideHelp"); document.getElementById("help").classList.toggle("hideHelp");' value="Help" accesskey="H" title="H"/>
+		<diV class="hideHelp" id="thanks">
+			<br>
+			My Thanks goes to,
+			<br><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;Vipul Papodara [ In 7th sem, you taught me making DFA from a regex this vvay :) ]
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;CD Dragon Book - Aho, Lam, Sethi, Ullman [ From regex to Tree to DFA ]
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;Introduction to Languages and The Theory of Computation 4ed - John C. Martin [ Minimization ]
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;JaVaScript: The DefinitiVe Guide 6ed - DaVid Flanagan [ using CanVas API ]
+			<br><br>
+		</diV>
+		<diV class="hideHelp" id="help">
+			<br>
+			VVant to see DFA of eVen-lengthed-binary strings <span>(</span>00<span>+</span>11<span>+</span>10<span>+</span>01<span>)*</span> ?
+			<br><br>
+			Then simply type in your regular expression in the text-field and hit Enter-key to see hovv its minimized DFA could look.
+			<br><br>
+			But; there can be tvvo cases, depending on vvhether your alphabet contains tokens of length more than one or not.
+			<br><br>
+			For clarification,
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;A language vvith the alphabet <span>{</span>a<span>,</span> b<span>,</span> c<span>,</span> d<span>}</span> and another vvith the alphabet <span>{</span>ab<span>,</span> cd<span>}</span> differs in that the first
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;has each token of length 1 in contrast to the second vvhich has some token that has length more than 1.
+			<br><br>
+			If your case happens to be the first one, just type in your regex and hit the Enter-key and it vvill do.
+			<br><br>
+			Othervvise there are buttons that vvill help you build your regex.
+			<br><br>
+			For example, if your alphabet is <span>{</span>i<span>,</span> am<span>,</span> graduate<span>,</span> iit-k<span>}</span> and the regex is like,
+			<br><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;<span>(</span>i<span>&bull;</span>am<span>)+(</span>iit-k<span>&bull;</span>graduate<span>)*</span>
+			<br><br>
+			Click <span>(</span> button
+			<br><br>
+			Type in
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;i
+			<br><br>
+			Click <span>CONCAT</span> button
+			<br><br>
+			Type in
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;am
+			<br><br>
+			Click <span>)</span> button
+			<br><br>
+			Click <span>OR</span> button
+			<br><br>
+			Click <span>(</span> button
+			<br><br>
+			Type in
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;iit-k
+			<br><br>
+			Click <span>CONCAT</span> button
+			<br><br>
+			Type in
+			<br>
+			&nbsp;&nbsp;&nbsp;&nbsp;graduate
+			<br><br>
+			Click <span>*</span> button
+			<br><br>
+			Click <span>)</span> button
+			<br><br>
+			Hit Enter-key.
+			<br><br>
+			<diV class="anHr"></diV>
+			<br>
+			In aboVe example the parentheses used are redundant. If it vvas specified like,
+			<br><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;i<span>&bull;</span>am<span>+</span>iit-k<span>&bull;</span>graduate<span>*</span>
+			<br><br>
+			it vvould haVe the same effect. Because the logic assumes that the OR-operator delimits sub-expressions.
+			<br><br>
+			<diV class="anHr"></diV>
+			<br>
+			The Colors of States indicate their types,
+			<br><br>
+			<table>
+				<tr>
+					<th>Color</th>
+					<th>State Type</th>
+				</tr>
+				<tr>
+					<td style="color: white; background-color: #201291;">OFFSPRING</td>
+					<td>NORMAL states</td>
+				</tr>
+				<tr>
+					<td style="color: white; background-color: green;">GREEN</td>
+					<td>ACCEPTING states</td>
+				</tr>
+				<tr>
+					<td style="color: white; background-color: black;">BLACK</td>
+					<td>DEAD state</td>
+				</tr>
+			</table>
+			<br><br>
+			<diV class="anHr"></diV>
+			<br>
+			Each button has an access-key assigned to it that may come in handy if brovvser allovvs it.
+			You may be able to use it in combination vvith the ALT key.
+			<br><br>
+			<table>
+				<tr>
+					<th>Key</th>
+					<th>Button</th>
+					<th>Use</th>
+				</tr>
+				<tr>
+					<td>.</td>
+					<td>CONCAT</td>
+					<td>To concat a nevv sub-expression</td>
+				</tr>
+				<tr>
+					<td>S</td>
+					<td>*</td>
+					<td>To apply kleene-star to current sub-expression</td>
+				</tr>
+				<tr>
+					<td>P</td>
+					<td>OR</td>
+					<td>To apply OR operator betvven current and next sub-expressions</td>
+				</tr>
+				<tr>
+					<td>O</td>
+					<td>(</td>
+					<td>To start inserting a nevv sub-expression (that has multiple sub-expressions)</td>
+				</tr>
+				<tr>
+					<td>C</td>
+					<td>)</td>
+					<td>To terminate the current sub-expression</td>
+				</tr>
+				<tr>
+					<td>N</td>
+					<td>NULL</td>
+					<td>To insert a NULL string</td>
+				</tr>
+				<tr>
+					<td>R</td>
+					<td>RESET</td>
+					<td>To reset all calculations so as to start building regex again</td>
+				</tr>
+				<tr>
+					<td>M</td>
+					<td>PAINT</td>
+					<td>To paint the minimized DFA</td>
+				</tr>
+				<tr>
+					<td>Q</td>
+					<td>shovv/hide dead</td>
+					<td>To toggle displaying dead states</td>
+				</tr>
+			</table>
+			<br><br>
+			<diV class="anHr"></diV>
+			<br>
+			And yes, vvhat if you vvant to specify the "NULL-string" into the single letter regex ?
+			<br><br>
+			Take for instance,
+			<br><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;0<span>+</span>1<span>+NULL</span>
+			<br><br>
+			In such case, use the period (".") to specify the "String of length Zero". Thus it becomes,
+			<br><br>
+			&nbsp;&nbsp;&nbsp;&nbsp;0<span>+</span>1<span>+.</span>
+			<br><br>
+			<diV class="anHr"></diV>
+			<br>
+			Alright. But vvhat if "dot" itself is a part of the alphabet in the single letter regex ?
+			<br><br>
+			For example, alphabet=<span>{</span>0<span>,</span> 1<span>,</span> 2<span>,</span> .<span>,</span> 9<span>}</span> and regex=20.12.1991
+			<br><br>
+			VVell, then you just haVe to follovv the tradition id est, escape the period.
+			<br><br>
+			Thus, regex=20<span>\</span>.12<span>\</span>.1991
+			<br><br>
+			This vvay you vvill be able to use <span>{</span>.<span>,</span> +<span>,</span> (<span>,</span> )<span>,</span> *<span>,</span> \<span>}</span> as tokens by escaping them.
+			<br><br><br>
+		</diV>
+		<input type='text' style='width: 100%;' id='tf' onkeyup='if (event.keyCode == 13) { if (la2flag == true)  begin(); else la1(); init(); } else if(event.keyCode == (20 + 7)) this.value = "";' placeholder="VVhateVer V du in dis vvorld vvill be insignificant; but it is V imp dat V du it; bcoz, nobody else vvill." title=
+'IF YOU NEED TO REMOVE YOUR CURRENT INPUT,
+INSTEAD OF HITTING A BUNCH OF BACKSPACES,
+JUST HIT THE ESC-KEY FOR ONCE.' />
+		<input type='button' title='.' accesskey='.' onclick='dot();'   value='CONCAT' />
+		<input type='button' title='S' accesskey='S' onclick='star();'  value='*' />
+		<input type='button' title='P' accesskey='P' onclick='plus();'  value='OR' />
+		<input type='button' title='O' accesskey='O' onclick='op();'    value='(' />
+		<input type='button' title='C' accesskey='C' onclick='cp();'    value=')' />
+		<input type='button' title='N' accesskey='N' onclick='ns();'    value='NULL' />
+		<input type='button' title='R' accesskey='R' onclick='init();'  value='RESET' />
+		<input type='button' title='M' accesskey='M' onclick='if (la2flag == true) begin(); else la1(); init();' value='PAINT' />
+		<input type='button' title='Q' accesskey='Q' onclick='this.value = (hideDead = !hideDead) ? "shovv dead" : "hide dead"; tf.focus();' value='shovv dead' />
+		<div id='output'>
+			<div id='regex'></div>
+			<br id='bottom' />
+		</div>
+		<script>
+			var output_initial_text = output.innerHTML;
+			var la2flag = false;
+			var hideDead = true;
+			var ref_kid = bottom;
+			init();
+			function dot() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;") + "<span>&bull;</span>";
+					tf.value = "";
+				}
+				tf.focus();
+			}
+			function star() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				re_ia[re_ia.length] = -1;
+				regex.innerHTML += "<span>*</span>";
+				tf.value = "";
+				tf.focus();
+			}
+			function plus() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				re_ia[re_ia.length] = -2;
+				regex.innerHTML += "<span>+</span>";
+				tf.value = "";
+				tf.focus();
+			}
+			function op() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				re_ia[re_ia.length] = -3;
+				regex.innerHTML += "<span>(</span>";
+				tf.value = "";
+				tf.focus();
+			}
+			function cp() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				re_ia[re_ia.length] = -4;
+				regex.innerHTML += "<span>)</span>";
+				tf.value = "";
+				tf.focus();
+			}
+			function ns() {
+				la2flag = true;
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				nulls[nulls.length] = ln2rei.length;
+				ln2rei[ln2rei.length] = re_ia.length;
+				re_ia[re_ia.length] = -5;
+				regex.innerHTML += "<span>NULL</span>";
+				tf.value = "";
+				tf.focus();
+			}
+			function begin() {
+				if (tf.value.length > 0) {
+					var i = 0;
+					for (; i < tokens.length; ++i) if (tokens[i] === tf.value) break;
+					if (i == tokens.length) tokens[i] = tf.value;
+					if (ti2lns[i] === undefined) ti2lns[i] = [ln2rei.length];
+					else ti2lns[i][ti2lns[i].length] = ln2rei.length;
+					ln2rei[ln2rei.length] = re_ia.length;
+					re_ia[re_ia.length] = i;
+					regex.innerHTML += tf.value.replace(/&/g,"&"+"amp;").replace(/>/g,"&"+"gt;").replace(/</g,"&"+"lt;");
+				}
+				if (re_ia.length == 0) { accNothing(); tf.focus(); return; }
+				ln2rei[ln2rei.length] = re_ia.length;
+				re_ia[re_ia.length] = -6;
+				regex.innerHTML += "<span>EoRE</span>";
+				tf.value = "";
+				tf.focus();
+				init_tree();
+				make_tree();
+				discard_unnecessary_nodes();
+				make_indexes_start_from_0();
+				calc_follovvpos();
+				make_dfa();
+				min_dfa();
+				dravv_dfa();
+				tf.focus();
+			}
+			function init() {
+				tokens = new Array();
+				re_ia = new Array();
+				ln2rei = new Array();
+				ti2lns = new Array();
+				nulls = new Array();
+				regex.innerHTML = "";
+				tf.focus();
+			}
+			function node(id) {
+				this.id = id;
+				this.k = -1;
+				this.p = null;
+				this.c = new Array();
+				this.t = -3;
+				this.push = function() {
+					for (var i = 0; i < arguments.length; ++i) {
+						arguments[i].k = this.c.length;
+						(this.c[this.c.length] = arguments[i]).p = this;
+					}
+					return this;
+				}
+				this.pop = function() {
+					--this.c.length;
+					return this;
+				}
+				this.fill = function(index, a_node) {
+					a_node.k = index;
+					(this.c[index] = a_node).p = this;
+				}
+				this.t_ = function(t) {
+					this.t = t;
+					return this;
+				}
+				this.x = 0;
+				this.y = 0;
+				this.cp = 0;
+				this.lastpos = new Array();
+				this.firstpos = new Array();
+				this.nullable = false;
+			}
+			function at(index) {
+				if (r[index] === undefined)
+					r[index] = new node(index);
+				return r[index];
+			}
+			function init_tree() {
+				r = new Array();
+				stack = new Array();
+				at(0).push(
+					at(1).t_(-2).push(
+						at(2).push(
+							at(3))),
+					at(4).t_(ln2rei.length - 1)).p = r[0];
+				stack[0] = r[3];
+				tor = 4;
+			}
+			function make_tree() {
+				for (var i = 0; i < re_ia.length - 1; ++i) {
+					var t = stack[stack.length - 1], p = t.p, pp = p.p, r1 = at(tor + 1), r2 = at(tor + 2), r3 = at(tor + 3), r4 = at(tor + 4);
+					switch (re_ia[i]) {
+						case -1:
+							var ls = p.c[0];
+							if (ls.t == -3) {
+								var rc = ls.c[1];
+								ls.fill(1, r1.t_(-1).push(rc));
+							} else {
+								p.fill(0, r1.t_(-1).push(ls));
+							}
+							tor += 1;
+							break;
+						case -2:
+							p.pop();
+							pp.push(t.push(r1));
+							stack[stack.length - 1] = r1;
+							tor += 1;
+							break;
+						case -3:
+							t.t_(-2).push(r1.push(r2));
+							if (p.c.length == 1) {
+								p.push(r3);
+								stack[stack.length - 1] = r3;
+								tor += 3;
+							} else {
+								pp.pop();
+								pp.push(r3.push(p, r4));
+								stack[stack.length - 1] = r4;
+								tor += 4;
+							}
+							stack[stack.length] = r2;
+							break;
+						case -4:
+							p.pop();
+							t.t = -4;
+							--stack.length;
+							break;
+						default :
+							for (var j = 0; j < ln2rei.length; ++j) if (ln2rei[j] == i) { t.t = j; break; }
+							if (p.c.length == 1) {
+								p.push(r1);
+								stack[stack.length - 1] = r1;
+								tor += 1;
+							} else {
+								pp.pop();
+								pp.push(r1.push(p, r2));
+								stack[stack.length - 1] = r2;
+								tor += 2;
+							}
+					}
+				}
+				t = stack[stack.length - 1];
+				t.p.pop();
+				t.t = -4;
+				var lc = r[0].c[0];
+				if (lc.c.length == 1) {
+					lc.t = -4;
+					var lcc = lc.c[0];
+					lcc.p = r[0];
+					r[0].c[0] = lcc;
+				}
+			}
+			function discard_unnecessary_nodes() {
+				for (var i = 0; i <= tor; ++i) {
+					var t = r[i];
+					if (t.c.length == 1 && (t.t == -3 || t.t == -2)) {
+						t.t = -4;
+						t.p.fill(t.k, t.c[0]);
+					}
+				}
+			}
+			function make_indexes_start_from_0() {
+				var k = 0;
+				for (var i = 0; i <= tor; i++)
+					if (r[i].t != -4)
+						(r[k] = r[i]).id = k++;
+				r.length = k;
+			}
+			function calc_follovvpos() {
+				for (var i = 0; i < r.length; ++i) r[i].cp = 0;
+				stack = new Array();
+				var cn = r[0];
+				while (r[0].cp < r[0].c.length)
+					if (cn.cp < cn.c.length)
+						cn = cn.c[cn.cp];
+					else {
+						(cn = (n = stack[stack.length] = cn).p).cp++;
+						var LC, RC;
+						switch(n.t) {
+							case -3:
+								LC = n.c[0];
+								RC = n.c[1];
+								n.nullable = LC.nullable && RC.nullable;
+								if (LC.nullable)
+									n.firstpos = combo([LC.firstpos, RC.firstpos]);
+								else
+									n.firstpos = LC.firstpos;
+								if (RC.nullable)
+									n.lastpos = combo([LC.lastpos, RC.lastpos]);
+								else
+									n.lastpos = RC.lastpos;
+								break;
+							case -2:
+								var fp = new Array();
+								var lp = new Array();
+								for (var j = 0; j < n.c.length; j++) {
+									n.nullable = n.nullable || n.c[j].nullable;
+									fp[fp.length] = n.c[j].firstpos;
+									lp[lp.length] = n.c[j].lastpos;
+								}
+								n.firstpos = combo(fp);
+								n.lastpos = combo(lp);
+								break;
+							case -1:
+								LC = n.c[0];
+								n.nullable = true;
+								n.firstpos = LC.firstpos;
+								n.lastpos = LC.lastpos;
+								break;
+							default:
+								if (re_ia[ln2rei[n.t]] == -5)
+									n.nullable = true;
+								else {
+									n.nullable = false;
+									n.firstpos = n.lastpos = [n.t];
+								}
+						}
+					}
+				stack[stack.length] = n = r[0];
+				LC = n.c[0];
+				RC = n.c[1];
+				n.nullable = LC.nullable && RC.nullable;
+				if (LC.nullable)
+					n.firstpos = combo([LC.firstpos, RC.firstpos]);
+				else
+					n.firstpos = LC.firstpos;
+				if (RC.nullable)
+					n.lastpos = combo([LC.lastpos, RC.lastpos]);
+				else
+					n.lastpos = RC.lastpos;
+				follovvpos = new Array(ln2rei.length - 1);
+				for (var i = 0; i < follovvpos.length; ++i) follovvpos[i] = new Array();
+				for (var i = 0; i < stack.length; ++i) {
+					var x = stack[i];
+					switch(x.t) {
+						case -3:
+							var LC_s_lastpos = x.c[0].lastpos;
+							for (var j = 0; j < LC_s_lastpos.length; ++j) {
+								var y = LC_s_lastpos[j];
+								follovvpos[y] = yog(follovvpos[y], x.c[1].firstpos);
+							}
+							break;
+						case -1:
+							for (var j = 0; j < x.lastpos.length; ++j)
+								follovvpos[x.lastpos[j]] = yog(follovvpos[x.lastpos[j]], x.firstpos);
+					}
+				}
+			}
+			function combo(array) {
+				var a = new Array();
+				for (var i = 0; i < array.length; ++i)
+					for (var j = 0; j < array[i].length; ++j)
+						a[a.length] = array[i][j];
+				return a;
+			}
+			function yog() {
+				var a = new Array();
+				for (var i = 0; i < arguments.length; ++i)
+					for (var j = 0; j < arguments[i].length; ++j) {
+						var k = 0;
+						for (; k < a.length; ++k)
+							if (arguments[i][j] == a[k])
+								break;
+						if (k == a.length) {
+							a[k] = arguments[i][j];
+						}
+					}
+				sort(a);
+				return a;
+			}
+			function state() {
+				this.t = new Array();
+				this.a = false;
+				this.d = false;
+				this.ida = new Array();
+				this.x = 0;
+				this.y = 0;
+				this.tome = new Array();
+				this.m = new Array();
+				this.dont_calc = false;
+			}
+			function make_dfa() {
+				s = new Array();
+				(s[0] = new state()).ida = r[0].firstpos;
+				var top = 0;
+				while (top < s.length) {
+					var cs = s[top];
+					for (var i = 0; i < tokens.length; ++i) {
+						var a1 = chhed(cs.ida, ti2lns[i]);
+						var a2 = new Array();
+						for (var j = 0; j < a1.length; ++j)
+							for (var k = 0; k < follovvpos[a1[j]].length; ++k) {
+								var l = 0;
+								for (; l < a2.length; ++l)
+									if (follovvpos[a1[j]][k] == a2[l])
+										break;
+								if (l == a2.length)
+									a2[l] = follovvpos[a1[j]][k];
+							}
+						yog(a2);
+						var j = 0;
+						for (; j < s.length; ++j) {
+							if (are_same_arrays(a2, s[j].ida))
+								break;
+						}
+						if (j == s.length) (s[j] = new state()).ida = a2;
+						cs.t[i] = j;
+						s[j].tome[s[j].tome.length] = [top, i];
+					}
+					for (var i = 0; i < cs.ida.length; ++i)
+						if (cs.ida[i] == ln2rei.length - 1)
+							cs.a = true;
+					if (!cs.a) {
+						var i = 0;
+						for (; i < tokens.length; ++i)
+							if (cs.t[i] != top)
+								break;
+						if (i == cs.t.length)
+							cs.d = true;
+					}
+					top++;
+				}
+			}
+			function chhed(a1, a2) {
+				var a = new Array();
+				for (var i = 0; i < a1.length; ++i)
+					for (var j = 0; j < a2.length; ++j)
+						if (a1[i] == a2[j])
+							a[a.length] = a1[i];
+				sort(a);
+				return a;
+			}
+			function are_same_arrays(a1, a2) {
+				if (a1.length != a2.length) return false;
+				for (var i = 0; i < a1.length; ++i) if (a1[i] != a2[i]) return false;
+				return true;
+			}
+			function sort(a) {
+				var count = 0;
+				for (var i = 0; i < a.length - 1; ++i)
+					for (var j = 0; j < a.length - 1 - i; ++j)
+						if (a[j] > a[j + 1]) {
+							var temp = a[j];
+							a[j] = a[j + 1];
+							a[j + 1] = temp;
+						}
+			}
+			function min_dfa() {
+				var t = new Array(s.length);
+				for (var i = 0; i < t.length; ++i) t[i] = new Array(s.length);
+				for (var i = 0; i < t.length; ++i)
+					t[i][i] = false;
+				unmarkeds = new Array();
+				for (var i = 0; i < t.length - 1; ++i)
+					for (var j = i + 1; j < t.length; ++j)
+						if (!( t[i][j] = t[j][i] = s[i].a ? (s[j].a ? false : true) : (s[j].a ? true : false) ))
+							unmarkeds[unmarkeds.length] = [i, j];
+				var pl;
+				do {
+					pl = unmarkeds.length;
+					for (var i = 0; i < unmarkeds.length; ++i) {
+						var x = unmarkeds[i][0];
+						var y = unmarkeds[i][1];
+						for (var j = 0; !t[x][y] && j < tokens.length; ++j) {
+							t[y][x] = t[x][y] = t[ s[x].t[j] ][ s[y].t[j] ];
+						}
+						if (t[x][y]) {
+							unmarkeds[i] = unmarkeds[unmarkeds.length - 1];
+							--unmarkeds.length;
+							--i;
+						}
+					}
+				} while (unmarkeds.length != pl);
+				for (var i = 0; i < unmarkeds.length; ++i) {
+					var unm0 = unmarkeds[i][0];
+					var unm1 = unmarkeds[i][1];
+					var s0 = s[unm0];
+					var s1 = s[unm1];
+					s0.m[s0.m.length] = s1.m[s1.m.length] = unm0;
+					s0.m[s0.m.length] = s1.m[s1.m.length] = unm1;
+				}
+				var s2 = new Array();
+				for (var i = 0; i < s.length; ++i) {
+					var cs = s[i];
+					var csm = cs.m;
+					if (csm.length == 0) {
+						var tome = cs.tome;
+						for (var k = 0; k < tome.length; ++k)
+							s[tome[k][0]].t[tome[k][1]] = s2.length;
+						s2[s2.length] = s[i];
+					} else if (!cs.dont_calc) {
+						csm = yog(csm);
+						for (var j = 0; j < csm.length; ++j) {
+							var cs2 = s[csm[j]];
+							cs2.dont_calc = true;
+							var tome = cs2.tome;
+							for (var k = 0; k < tome.length; ++k)
+								s[tome[k][0]].t[tome[k][1]] = s2.length;
+						}
+						s2[s2.length] = s[i];
+					}
+				}
+				s = s2;
+			}
+			function dravv_dfa() {
+				var font_size = 27;
+				var font_ = font_size + "px Arial Unicode MS";
+				var edge_color = "CornflowerBlue";
+				var edge_vv = 1;
+				var seperator_color = "CornflowerBlue";
+				var seperator_vv = 2;
+				var seperator_margin = 2;
+				var inter_token_distance = (2 * seperator_margin) + seperator_vv;
+				var token_color = "black";
+				var dead_state_color = "black";
+				var normal_state_color = "#201291";
+				var acc_state_color = "green";
+				var state_label_color = "white";
+				var arrovv_head_color = "skyBlue";
+
+				var anHr = document.createElement("diV");
+				anHr.setAttribute("class", "anHr");
+				output.insertBefore(anHr, ref_kid);
+				CV_dfa = document.createElement("canVas");
+				output.insertBefore(CV_dfa, ref_kid);
+				output.insertBefore(document.createElement("br"), ref_kid);
+				var clone_of_regex;
+				if (la2flag) {
+					la2flag = false;
+					clone_of_regex = regex.cloneNode(true);
+					clone_of_regex.removeAttribute("id");
+					clone_of_regex.innerHTML += tf.value;
+				} else {
+					clone_of_regex = document.createElement("diV");
+					var strg = "";
+					for (var i = 0; i < re_ia.length - 1; ++i) {
+						var novv = re_ia[i];
+						switch (novv) {
+						case -1:
+							strg += "<span>*</span>";
+							break;
+						case -2:
+							strg += "<span>+</span>";
+							break;
+						case -3:
+							strg += "<span>(</span>";
+							break;
+						case -4:
+							strg += "<span>)</span>";
+							break;
+						case -5:
+							strg += "<span>ε</span>";
+							break;
+						default:
+							strg += tokens[novv];
+						}
+					}
+					clone_of_regex.innerHTML = strg;
+				}
+				output.insertBefore(clone_of_regex, ref_kid);
+				ref_kid = anHr;
+				var c = CV_dfa.getContext("2d");
+
+				var longest_string = tokens[0];
+				for (var i = 1; i < tokens.length; ++i) longest_string += tokens[i];
+				c.font = font_;
+				var sr = 20 + c.measureText(s.length - 1).width + 7;
+				c.font = font_;
+				inter_state_distance = sr + (c.measureText(longest_string).width + (tokens.length - 1) * inter_token_distance);
+				const_x_incr = (2 * sr) + inter_state_distance;
+
+				CV_dfa.width = s.length * const_x_incr;
+				max_aboVe = max_belovv = 1;
+				for (var i = 0; i < s.length; ++i) {
+					for (var j = 0; j < tokens.length; ++j) {
+						var difference = s[i].t[j] - i;
+						if (difference < 0) {
+							difference *= -1;
+							if (max_belovv < difference)
+								max_belovv = difference;
+						} else
+							if (max_aboVe < difference)
+								max_aboVe = difference;
+					}
+				}
+				CV_dfa.height = (max_aboVe + max_belovv) * const_x_incr / 2 + 2 * font_size;
+
+				s[0].x = sr;
+				s[0].y = max_aboVe * const_x_incr / 2 + font_size;
+
+				for (var i = 1; i < s.length; ++i) {
+					s[i].y = s[i - 1].y;
+					s[i].x = s[i - 1].x + const_x_incr;
+				}
+				for (var i = 0; i < s.length; ++i) {
+					var a1 = new Array();
+					for (var j = 0; j < tokens.length; ++j) {
+						var index = -1;
+						for (var k = 0; k < a1.length; ++k) if (a1[k][0] == s[i].t[j]) { index = k; break; }
+						if (index === -1) a1[a1.length] = [ s[i].t[j], j ]; else a1[index][ a1[index].length ] = j;
+					}
+					for (var j = 0; j < a1.length; ++j) {
+						if (hideDead && s[a1[j][0]].d) continue;
+						var label = tokens[ a1[j][1] ];
+						var label_vv = 0;
+						for (var k = 2; k < a1[j].length; ++k) {
+							label += tokens[ a1[j][k] ];
+							label_vv += inter_token_distance;
+						}
+						c.font = font_;
+						label_vv += c.measureText(label).width;
+						var x_pos;
+						var y_pos;
+						var center_x_yam = ( s[i].x + s[ a1[j][0] ].x ) / 2;
+						var radius = s[i].x - s[ a1[j][0] ].x;
+						radius /= (radius < 0 ? -1 : 1) * 2;
+						if (i < a1[j][0]) {
+							c.beginPath();
+							c.arc(center_x_yam, s[i].y, radius, 0, Math.PI, true);
+							c.lineWidth = edge_vv;
+							c.strokeStyle = edge_color;
+							c.stroke();
+							c.beginPath();
+							c.arc(center_x_yam, s[i].y, radius, 0, (Math.PI * 2) - (2 * 20 * Math.PI / 180), true);
+							c.lineWidth = 7;
+							c.strokeStyle = arrovv_head_color;
+							c.lineCap = "round";
+							c.stroke();
+							x_pos = center_x_yam - label_vv / 2;
+							y_pos = s[i].y - radius;
+						} else if (i > a1[j][0]) {
+							c.lineWidth = edge_vv;
+							c.beginPath();
+							c.strokeStyle = edge_color;
+							c.arc(center_x_yam, s[i].y, radius, 0, Math.PI, false);
+							c.stroke();
+							c.strokeStyle = arrovv_head_color;
+							c.lineWidth = 7;
+							c.beginPath();
+							c.arc(center_x_yam, s[i].y, radius, Math.PI, (Math.PI) - (2 * 20 * Math.PI / 180), true);
+							c.lineCap = "round";
+							c.stroke();
+							x_pos = center_x_yam - label_vv / 2;
+							y_pos = s[i].y + radius;
+						} else {
+							c.beginPath();
+							c.lineWidth = edge_vv;
+							c.strokeStyle = edge_color;
+							c.arc(s[i].x + sr, s[i].y, sr, -( (2 * Math.PI / 3) + (Math.PI / 180) ), Math.PI / 2, false);
+							c.stroke();
+							c.lineWidth = 7;
+							c.beginPath();
+							c.strokeStyle = arrovv_head_color;
+							c.arc(s[i].x + sr, s[i].y, sr, ( (2 * Math.PI / 3) + (Math.PI / 180) ), Math.PI / 2, true);
+							c.lineCap = "round";
+							c.stroke();
+							x_pos = s[i].x + (2 * sr) - 4;
+							y_pos = s[i].y;
+						}
+						c.lineCap = "butt";
+						c.lineWidth = 1;
+						c.textAlign = "left";
+						c.textBaseline = "middle";
+						c.font = font_;
+						c.strokeStyle = "white";
+						c.strokeText(tokens[ a1[j][1] ], x_pos, y_pos);
+						c.fillStyle = token_color;
+						c.fillText(tokens[ a1[j][1] ], x_pos, y_pos);
+						for (var k = 2; k < a1[j].length; ++k) {
+							x_pos += c.measureText(tokens[ a1[j][k - 1] ]).width + inter_token_distance;
+							c.lineWidth = 1;
+							c.strokeStyle = "white";
+							c.font = font_;
+							c.strokeText(tokens[ a1[j][k] ], x_pos, y_pos);
+							c.fillStyle = token_color;
+							c.font = font_;
+							c.fillText(tokens[ a1[j][k] ], x_pos, y_pos);
+							c.beginPath();
+							c.moveTo(x_pos - inter_token_distance / 2, y_pos - font_size);
+							c.lineWidth = seperator_vv;
+							c.lineTo(x_pos - inter_token_distance / 2, y_pos + font_size);
+							c.strokeStyle = seperator_color;
+							c.stroke();
+						}
+					}
+				}
+				for (var i = 0; i < s.length; ++i) {
+					if (hideDead && s[i].d) continue;
+					c.beginPath();
+					if (s[i].d) c.fillStyle = dead_state_color;
+					else if (s[i].a) c.fillStyle = acc_state_color;
+					else c.fillStyle = normal_state_color;
+					c.arc(s[i].x, s[i].y, sr, 0, Math.PI * 2, true);
+					c.closePath();
+					c.fill();
+					c.lineWidth = 1;
+					c.textAlign = "center";
+					c.textBaseline = "middle";
+					c.strokeStyle = state_label_color;
+					c.font = font_;
+					c.strokeText(i, s[i].x, s[i].y);
+					c.fillStyle = state_label_color;
+					c.font = font_;
+					c.fillText(i, s[i].x, s[i].y);
+				}
+			}
+			function la1() {
+				var re_s = tf.value;
+				if (re_s.length == 0) { accNothing(); return; }
+				for (var i = 0; i < re_s.length; ++i) {
+					var cc = re_s.charAt(i);
+					var j;
+					switch (cc) {
+						case '\\':
+							cc = re_s.charAt(++i);
+							for (j = 0; j < tokens.length; ++j) if (tokens[j] == cc) break;
+							if (j == tokens.length) tokens[j] = "" + cc;
+							if (ti2lns[j] === undefined) ti2lns[j] = new Array();
+							ti2lns[j][ti2lns[j].length] = ln2rei.length;
+							ln2rei[ln2rei.length] = re_ia.length;
+							re_ia[re_ia.length] = j;
+							break;
+						case '*':
+							re_ia[re_ia.length] = -1;
+							break;
+						case '+':
+							re_ia[re_ia.length] = -2;
+							break;
+						case '(':
+							re_ia[re_ia.length] = -3;
+							break;
+						case ')':
+							re_ia[re_ia.length] = -4;
+							break;
+						case '.':
+							ln2rei[ln2rei.length] = re_ia.length;
+							re_ia[re_ia.length] = -5;
+							break;
+						default:
+							for (j = 0; j < tokens.length; ++j) if (tokens[j] == cc) break;
+							if (j == tokens.length) tokens[j] = "" + cc;
+							if (ti2lns[j] === undefined) ti2lns[j] = new Array();
+							ti2lns[j][ti2lns[j].length] = ln2rei.length;
+							ln2rei[ln2rei.length] = re_ia.length;
+							re_ia[re_ia.length] = j;
+					}
+				}
+				ln2rei[ln2rei.length] = re_ia.length;
+				re_ia[re_ia.length] = -6;
+
+				init_tree();
+				make_tree();
+				discard_unnecessary_nodes();
+				make_indexes_start_from_0();
+				calc_follovvpos();
+				make_dfa();
+				min_dfa();
+				dravv_dfa();
+			}
+			function accNothing() {
+				var circle = document.createElement("diV");
+				circle.setAttribute("style", "height: 72pt; width: 72pt; background-color: #201291; border-radius: 36pt; margin: 20pt 0pt; font-size: 27pt; font-weight: 700; text-align: center; color: white; line-height: 72pt;");
+				circle.innerHTML = "0";
+
+				var anHr = document.createElement("diV");
+				anHr.setAttribute("class", "anHr");
+				output.insertBefore(anHr, ref_kid);
+				output.insertBefore(circle, ref_kid);
+				output.insertBefore(document.createElement("br"), ref_kid);
+				var clone_of_regex = document.createElement("diV");
+				clone_of_regex.setAttribute("style", "color: red; font-size: 20px; letter-spacing: 1px;");
+				clone_of_regex.innerHTML = "Accepts Nothing";
+				output.insertBefore(clone_of_regex, ref_kid);
+				ref_kid = anHr;
+			}
+			</script>
+	</body>
+</html>
